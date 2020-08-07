@@ -1,3 +1,3 @@
-# Example of doing a full text index and search using CockroachDB
+# Example: Full Text Index and Search Using CockroachDB
 
 

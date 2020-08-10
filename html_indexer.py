@@ -28,10 +28,11 @@ import time
 docs_sql = "INSERT INTO docs (idx_name, uri, content, n_words) VALUES "
 words_sql = "INSERT INTO words (idx_name, uri, word, cnt) VALUES "
 
-# All English words, lower case
-word_list_url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt"
-word_list_file = "words_alpha.txt"
-english = set()
+word_lists = [
+  "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt",
+  "https://raw.githubusercontent.com/mgoddard/crdb-text-search/master/specialized_words.txt"
+]
+vocab = set()
 sno = nltk.stem.SnowballStemmer("english")
 stops = set(stopwords.words("english"))
 
@@ -73,7 +74,7 @@ def index_file(idx, in_file):
     if len(w) == 0:
       continue
     w = sno.stem(w) # Stem the word (this also lower-cases it)
-    if w in english:
+    if w in vocab:
       words[w] += 1
       n_words += 1
 
@@ -86,27 +87,30 @@ def index_file(idx, in_file):
   insert_row(conn, words_sql + ','.join(words_vals))
 
 # Word list is assumed to contain one word per line
-def load_word_list():
-  if not os.path.isfile(word_list_file):
-    with urllib.request.urlopen(word_list_url, context=ssl.SSLContext()) as infile, open(word_list_file, mode="wt") as outfile:
-      for line in infile:
-        line = infile.read().decode("utf-8")
+def load_word_list(url):
+  word_file = "/tmp" + "/" + os.path.basename(url)
+  # Fetch only if it's not already in /tmp/
+  if not os.path.isfile(word_file):
+    with urllib.request.urlopen(url, context=ssl.SSLContext()) as u, open(word_file, mode="wt") as outfile:
+      for line in u:
+        line = u.read().decode("utf-8")
         outfile.write(line)
-
-  with open(word_list_file, mode="rt") as f:
+  with open(word_file, mode="rt") as f:
     for w in f:
       w = w.strip()
-      if not w in stops: # Skip English stop words
-        english.add(sno.stem(w))
+      if not w in stops: # Skip stop words
+        vocab.add(sno.stem(w)) # Add the stemmed version of the word, w
 
 # main()
-# NOTE: host and port are set in env
+# NOTE: host and port are present in ENV
 conn = psycopg2.connect(
   database='defaultdb',
   user='root'
 )
 
-load_word_list()
+for url in word_lists:
+  load_word_list(url)
+
 idx_name = sys.argv[1]
 
 t0 = time.time()

@@ -145,7 +145,6 @@ LIMIT 12;
 
 
 ## TODO
-* Add a domain-specific term list (_CockroachDB_, _Kubernetes_, etc.)
 * Add a Flask REST API for search (indexing, too)
 * Build Docker image
 

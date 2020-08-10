@@ -15,6 +15,7 @@ $ sudo apt-get install python3-bs4
 
 ## References
 [Set up a local CockroachDB cluster](https://www.cockroachlabs.com/docs/stable/start-a-local-cluster.html)
+
 [HAProxy setup](https://www.cockroachlabs.com/docs/stable/deploy-cockroachdb-on-premises-insecure.html#step-5-set-up-load-balancing)
 
 ## TODO

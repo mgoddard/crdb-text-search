@@ -15,6 +15,12 @@ import nltk
 from nltk.corpus import stopwords
 import time
 
+#
+# Prior to running, set the two required connection parameters as environment variables:
+#
+#   $ export PGHOST=192.168.1.4
+#   $ export PGPORT=5432
+#
 # Time for indexing 410 HTML docs, 46 MB total
 # ./html_indexer.py crdb_docs *.html  36.17s user 1.25s system 42% cpu 1:27.18 total
 #
@@ -63,10 +69,10 @@ def index_file(idx, in_file):
 
   words = defaultdict(int)
   n_words = 0
-  for w in re.split(r"\W+", text):
+  for w in re.split(r"\W+", text): # Split string on any non-word characters
     if len(w) == 0:
       continue
-    w = sno.stem(w)
+    w = sno.stem(w) # Stem the word (this also lower-cases it)
     if w in english:
       words[w] += 1
       n_words += 1
@@ -94,11 +100,10 @@ def load_word_list():
         english.add(sno.stem(w))
 
 # main()
+# NOTE: host and port are set in env
 conn = psycopg2.connect(
   database='defaultdb',
-  user='root',
-  port=26257,
-  host='localhost'
+  user='root'
 )
 
 load_word_list()

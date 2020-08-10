@@ -27,6 +27,18 @@ for building Python programs to work with human language data:
 $ pip install --user -U nltk
 ```
 
+* Install a couple of supporting data files, for NLTK:
+```
+$ python -c 'import nltk; nltk.download("stopwords");'
+
+```
+
+* Data: a set of HTML documents to index.  If you'd like to try the ones used in my demo,
+you can grab them like so:
+```
+
+```
+
 ## References
 [Set up a local CockroachDB cluster](https://www.cockroachlabs.com/docs/stable/start-a-local-cluster.html)
 

@@ -79,18 +79,63 @@ def insert_row(conn, sql, do_commit=True):
       time.sleep(1)
       conn.commit()
 
+# Clean any special chars out of text
+def clean_text(text):
+  return re.sub(r"['\",{}]", "", text)
+
+# Decode a base64 encoded value to a UTF-8 string
+def decode(b64):
+  b = base64.b64decode(b64)
+  return b.decode(CHARSET).strip()
+
+# The search/query
+@app.route("/search/<idx>/<q_base_64>/<int:limit>")
+def do_search(idx, q_base_64, limit):
+  q = decode(q_base_64)
+  q = clean_text(q)
+  terms = []
+  for term in re.split(r"\W+", q):
+    if len(term) == 0:
+      continue
+    term = sno.stem(term)
+    if term in vocab:
+      terms.append(term)
+  q_sql = """
+  WITH d AS (
+    SELECT idx_name, uri, n_words
+    FROM docs
+    WHERE content @> """
+  # '{crdb_docs, instal, insecur}'
+  q_sql += "'{" + idx + "," + ','.join(terms) + "}'"
+  q_sql += """
+  ), w AS (
+    SELECT idx_name, uri, SUM(cnt) n
+    FROM words
+    WHERE idx_name = """
+  # 'crdb_docs' AND word IN ('instal', 'insecur')
+  q_sql += "'" + idx + "' AND word IN (" + ','.join(["'" + x + "'" for x in terms]) + ")"
+  q_sql += """
+    GROUP BY (idx_name, uri)
+  )
+  SELECT w.uri, (100.0 * n/n_words)::NUMERIC(9, 3) score FROM w
+  JOIN d ON d.idx_name = w.idx_name AND d.uri = w.uri
+  ORDER BY score DESC
+  LIMIT """
+  q_sql += str(limit)
+  print("SQL: " + q_sql)
+  return "SQL", 200
+
 # Use this for indexing an HTML document.
 # EXAMPLE:
-#   curl http://localhost:18080/add/crdb_docs/$( echo "https://www.cockroachlabs.com/blog/distributed-sql-webinar/" | base64 )
-@app.route('/add/<idx>/<url_base_64>')
+#   curl http://localhost:18080/add/crdb_docs/$( echo -n "https://www.cockroachlabs.com/blog/distributed-sql-webinar/" | base64 )
+@app.route("/add/<idx>/<url_base_64>")
 def index_url(idx, url_base_64):
-  b = base64.b64decode(url_base_64)
-  url = b.decode(CHARSET)
+  url = decode(url_base_64)
   print("Indexing " + url + " now")
   html = get_html(url)
   soup = BeautifulSoup(html, 'html.parser')
   text = soup.get_text()
-  text = re.sub(r"['\",{}]", "", text) # Clean any special chars out of this
+  text = clean_text(text)
 
   words = defaultdict(int)
   n_words = 0
@@ -130,7 +175,7 @@ def load_word_list(url):
 if __name__ == '__main__':
   for url in word_lists:
     load_word_list(url)
-  app.run(host='0.0.0.0', port=port, threaded=True, debug=False)
+  app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
   # At shutdown
   conn.close()
 

@@ -31,7 +31,7 @@ import base64
 #
 
 app = Flask(__name__)
-port = int(os.getenv("PORT", 18080))
+port = int(os.getenv("FLASK_PORT", 18080))
 
 conn = psycopg2.connect(
   database='defaultdb',
@@ -48,7 +48,13 @@ word_lists = [
 ]
 vocab = set()
 sno = nltk.stem.SnowballStemmer("english")
-stops = set(stopwords.words("english"))
+stops = None
+# Here, it can fail and this stop word list will need to be downloaded manually
+try:
+  stops = set(stopwords.words("english"))
+except:
+  nltk.download('stopwords')
+  stops = set(stopwords.words("english"))
 
 # For using requests to retrieve a URL
 headers = {

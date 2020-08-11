@@ -144,8 +144,3 @@ LIMIT 12;
 [PostgreSQL libpq environment varables](https://www.postgresql.org/docs/current/libpq-envars.html)
 
 
-## TODO
-* Add a Flask REST API for search (indexing, too)
-* Build Docker image
-
-

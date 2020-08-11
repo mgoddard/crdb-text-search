@@ -68,13 +68,13 @@ def insert_row(conn, sql, do_commit=True):
     try:
       cur.execute(sql)
     except:
-      logging.debug("insert_row(): status message: {}".format(cur.statusmessage))
+      logging.debug("INSERT: {}".format(cur.statusmessage))
       return
   if do_commit:
     try:
       conn.commit()
     except:
-      logging.debug("insert_row(): status message: {}".format(cur.statusmessage))
+      logging.debug("COMMIT: {}".format(cur.statusmessage))
       print("Retrying commit() in 1 s")
       time.sleep(1)
       conn.commit()
@@ -88,9 +88,11 @@ def decode(b64):
   b = base64.b64decode(b64)
   return b.decode(CHARSET).strip()
 
+#
 # The search/query
 # EXAMPLE (with a limit of 10 results):
 #   curl http://localhost:18080/search/crdb_docs/$( echo -n "Using Lateral Joins" | base64 )/10
+#
 @app.route("/search/<idx>/<q_base_64>/<int:limit>")
 def do_search(idx, q_base_64, limit):
   q = decode(q_base_64)
@@ -102,33 +104,33 @@ def do_search(idx, q_base_64, limit):
     term = sno.stem(term)
     if term in vocab:
       terms.append(term)
-  q_sql = """
+  sql = """
   WITH d AS (
     SELECT idx_name, uri, n_words
     FROM docs
     WHERE content @> """
   # '{crdb_docs, instal, insecur}'
-  q_sql += "'{" + idx + "," + ','.join(terms) + "}'"
-  q_sql += """
+  sql += "'{" + idx + "," + ','.join(terms) + "}'"
+  sql += """
   ), w AS (
     SELECT idx_name, uri, SUM(cnt) n
     FROM words
     WHERE idx_name = """
   # 'crdb_docs' AND word IN ('instal', 'insecur')
-  q_sql += "'" + idx + "' AND word IN (" + ','.join(["'" + x + "'" for x in terms]) + ")"
-  q_sql += """
+  sql += "'" + idx + "' AND word IN (" + ','.join(["'" + x + "'" for x in terms]) + ")"
+  sql += """
     GROUP BY (idx_name, uri)
   )
   SELECT w.uri, (100.0 * n/n_words)::NUMERIC(9, 3) score FROM w
   JOIN d ON d.idx_name = w.idx_name AND d.uri = w.uri
   ORDER BY score DESC
   LIMIT """
-  q_sql += str(limit) + ";"
-  # print("SQL: " + q_sql)
+  sql += str(limit) + ";"
+  print("SQL: " + sql)
   rv = []
   with conn.cursor() as cur:
     try:
-      cur.execute(q_sql)
+      cur.execute(sql)
       for row in cur:
         d = {}
         (uri, score) = row
@@ -138,9 +140,11 @@ def do_search(idx, q_base_64, limit):
       logging.debug("Search: status message: {}".format(cur.statusmessage))
   return Response(json.dumps(rv), status=200, mimetype="application/json")
 
+#
 # Use this for indexing an HTML document.
 # EXAMPLE:
 #   curl http://localhost:18080/add/crdb_docs/$( echo -n "https://www.cockroachlabs.com/blog/distributed-sql-webinar/" | base64 )
+#
 @app.route("/add/<idx>/<url_base_64>")
 def index_url(idx, url_base_64):
   url = decode(url_base_64)

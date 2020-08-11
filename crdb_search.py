@@ -121,9 +121,20 @@ def do_search(idx, q_base_64, limit):
   JOIN d ON d.idx_name = w.idx_name AND d.uri = w.uri
   ORDER BY score DESC
   LIMIT """
-  q_sql += str(limit)
-  print("SQL: " + q_sql)
-  return "SQL", 200
+  q_sql += str(limit) + ";"
+  # print("SQL: " + q_sql)
+  rv = []
+  with conn.cursor() as cur:
+    try:
+      cur.execute(q_sql)
+      for row in cur:
+        d = {}
+        (uri, score) = row
+        (d["uri"], d["score"]) = (uri, float(score))
+        rv.append(d)
+    except:
+      logging.debug("Search: status message: {}".format(cur.statusmessage))
+  return Response(json.dumps(rv), status=200, mimetype="application/json")
 
 # Use this for indexing an HTML document.
 # EXAMPLE:

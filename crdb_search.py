@@ -89,6 +89,8 @@ def decode(b64):
   return b.decode(CHARSET).strip()
 
 # The search/query
+# EXAMPLE (with a limit of 10 results):
+#   curl http://localhost:18080/search/crdb_docs/$( echo -n "Using Lateral Joins" | base64 )/10
 @app.route("/search/<idx>/<q_base_64>/<int:limit>")
 def do_search(idx, q_base_64, limit):
   q = decode(q_base_64)

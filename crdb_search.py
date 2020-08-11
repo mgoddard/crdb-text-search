@@ -38,6 +38,7 @@ conn = psycopg2.connect(
   user='root'
 )
 
+CHARSET = "utf-8"
 docs_sql = "INSERT INTO docs (idx_name, uri, content, n_words) VALUES "
 words_sql = "INSERT INTO words (idx_name, uri, word, cnt) VALUES "
 
@@ -81,10 +82,10 @@ def insert_row(conn, sql, do_commit=True):
 # Use this for indexing an HTML document.
 # EXAMPLE:
 #   curl http://localhost:18080/add/crdb_docs/$( echo "https://www.cockroachlabs.com/blog/distributed-sql-webinar/" | base64 )
-@app.route('/add/<idx>/<urlBase64>')
-def index_url(idx, urlBase64):
-  b = base64.b64decode(urlBase64)
-  url = b.decode("utf-8")
+@app.route('/add/<idx>/<url_base_64>')
+def index_url(idx, url_base_64):
+  b = base64.b64decode(url_base_64)
+  url = b.decode(CHARSET)
   print("Indexing " + url + " now")
   html = get_html(url)
   soup = BeautifulSoup(html, 'html.parser')
@@ -118,7 +119,7 @@ def load_word_list(url):
   if not os.path.isfile(word_file):
     with urllib.request.urlopen(url, context=ssl.SSLContext()) as u, open(word_file, mode="wt") as outfile:
       for line in u:
-        line = u.read().decode("utf-8")
+        line = u.read().decode(CHARSET)
         outfile.write(line)
   with open(word_file, mode="rt") as f:
     for w in f:

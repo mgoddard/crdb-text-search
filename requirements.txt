@@ -1,0 +1,6 @@
+psycopg2-binary
+Flask
+gunicorn
+beautifulsoup4
+requests
+nltk

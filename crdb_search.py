@@ -30,13 +30,28 @@ import base64
 #   $ export PGPORT=5432
 #
 
-app = Flask(__name__)
-port = int(os.getenv("FLASK_PORT", 18080))
+def db_connect():
+  return psycopg2.connect(database="defaultdb", user="root")
 
-conn = psycopg2.connect(
-  database='defaultdb',
-  user='root'
-)
+# Keep the DB connection in the g object
+# https://flask.palletsprojects.com/en/1.1.x/tutorial/database/
+# https://stackoverflow.com/questions/20036520/what-is-the-purpose-of-flasks-context-stacks
+# https://flask.palletsprojects.com/en/1.1.x/appcontext/
+# https://stackoverflow.com/questions/1281875/making-sure-that-psycopg2-database-connection-alive
+def get_db():
+  if "db" not in g:
+    g.db = db_connect()
+  # Handle the case of a closed connection
+  try:
+    cur = g.db.cursor()
+    cur.execute("SELECT 1")
+  except psycopg2.OperationalError:
+    g.db = db_connect()
+  return g.db
+
+app = Flask(__name__)
+with app.app_context():
+  get_db()
 
 CHARSET = "utf-8"
 docs_sql = "INSERT INTO docs (idx_name, uri, content, n_words) VALUES "
@@ -53,7 +68,7 @@ stops = None
 try:
   stops = set(stopwords.words("english"))
 except:
-  nltk.download('stopwords')
+  nltk.download("stopwords")
   stops = set(stopwords.words("english"))
 
 # For using requests to retrieve a URL
@@ -69,8 +84,9 @@ def get_html(url):
   req = requests.get(url, headers)
   return req.content
 
-def insert_row(conn, sql, do_commit=True):
-  with conn.cursor() as cur:
+def insert_row(sql, do_commit=True):
+  conn = get_db()
+  with conn.cursor() as cur: # FIXME: Here's what it can fail due to closed connection
     try:
       cur.execute(sql)
     except:
@@ -134,6 +150,7 @@ def do_search(idx, q_base_64, limit):
   sql += str(limit) + ";"
   print("SQL: " + sql)
   rv = []
+  conn = get_db()
   with conn.cursor() as cur:
     try:
       cur.execute(sql)
@@ -175,8 +192,8 @@ def index_url(idx, url_base_64):
   for k in words:
     words_a.append(k)
     words_vals.append("('" + idx + "', '" + url + "', '" + k + "', " + str(words[k]) + ")")
-  insert_row(conn, docs_sql + "('" + idx + "', '" + url + "', '{" + ','.join(words_a) + "}', " + str(n_words) + ")", False)
-  insert_row(conn, words_sql + ','.join(words_vals))
+  insert_row(docs_sql + "('" + idx + "', '" + url + "', '{" + ','.join(words_a) + "}', " + str(n_words) + ")", False)
+  insert_row(words_sql + ','.join(words_vals))
   print("OK")
   return "OK", 200
 
@@ -196,9 +213,11 @@ def load_word_list(url):
         vocab.add(sno.stem(w)) # Add the stemmed version of the word, w
 
 if __name__ == '__main__':
+  port = int(os.getenv("FLASK_PORT", 18080))
   for url in word_lists:
     load_word_list(url)
   app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
-  # At shutdown
-  conn.close()
+  # Shut down the DB connection when app quits
+  with app.app_context():
+    get_db().close()
 

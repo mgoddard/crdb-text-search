@@ -135,7 +135,11 @@ LIMIT 12;
 
 ## Further ...
 
-
+* Show how to run the Docker image
+* Run the DDL
+* Index some docs
+* Loop over searches, while adding more docs
+* Next steps: improve relevance calculations, add highlighting, etc.?
 
 ## References
 

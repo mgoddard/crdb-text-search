@@ -34,11 +34,6 @@ import base64
 def db_connect():
   return psycopg2.connect(database=os.getenv("PGDATABASE", "defaultdb"), user=os.getenv("PGUSER", "root"))
 
-# Keep the DB connection in the g object
-# https://flask.palletsprojects.com/en/1.1.x/tutorial/database/
-# https://stackoverflow.com/questions/20036520/what-is-the-purpose-of-flasks-context-stacks
-# https://flask.palletsprojects.com/en/1.1.x/appcontext/
-# https://stackoverflow.com/questions/1281875/making-sure-that-psycopg2-database-connection-alive
 def get_db():
   if "db" not in g:
     g.db = db_connect()

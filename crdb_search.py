@@ -192,6 +192,7 @@ def index_url(idx, url_base_64):
   for k in words:
     words_a.append(k)
     words_vals.append("('" + idx + "', '" + url + "', '" + k + "', " + str(words[k]) + ")")
+  # TODO: send any error messages back to client; e.g. primary key violation
   insert_row(docs_sql + "('" + idx + "', '" + url + "', '{" + ','.join(words_a) + "}', " + str(n_words) + ")", False)
   insert_row(words_sql + ','.join(words_vals))
   print("OK")

@@ -1,4 +1,6 @@
 #!/bin/bash
 
-docker push mgoddard/crdb-search-app:1.0
+tag=1.1
+
+docker push mgoddard/crdb-search-app:$tag
 

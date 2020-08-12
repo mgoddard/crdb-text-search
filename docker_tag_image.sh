@@ -1,4 +1,6 @@
 #!/bin/bash
 
-docker tag mgoddard/crdb-search-app mgoddard/crdb-search-app:1.0
+tag=1.1
+
+docker tag mgoddard/crdb-search-app mgoddard/crdb-search-app:$tag
 

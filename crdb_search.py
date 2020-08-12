@@ -12,6 +12,7 @@ import re
 from collections import defaultdict
 import urllib.request
 import requests
+import os
 import os.path
 import ssl
 import nltk
@@ -31,7 +32,7 @@ import base64
 #
 
 def db_connect():
-  return psycopg2.connect(database="defaultdb", user="root")
+  return psycopg2.connect(database=os.getenv("PGDATABASE", "defaultdb"), user=os.getenv("PGUSER", "root"))
 
 # Keep the DB connection in the g object
 # https://flask.palletsprojects.com/en/1.1.x/tutorial/database/

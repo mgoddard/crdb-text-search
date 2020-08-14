@@ -133,13 +133,19 @@ ORDER BY score DESC
 LIMIT 12;
 ```
 
-## Further ...
+## Try the Docker image
 
 * Show how to run the Docker image
 * Run the DDL
 * Index some docs
 * Loop over searches, while adding more docs
-* Next steps: improve relevance calculations, N-grams, add highlighting, etc.?
+
+## Ideas for what to do next
+
+* Improve relevance calculations
+* N-grams?
+* Synomyms?
+* Store the text in the `docs` table to support phrase matching?  How does this impact the size of the data being stored?
 
 ## References
 

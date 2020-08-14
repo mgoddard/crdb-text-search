@@ -50,8 +50,8 @@ with app.app_context():
   get_db()
 
 CHARSET = "utf-8"
-docs_sql = "INSERT INTO docs (idx_name, uri, content, n_words) VALUES "
-words_sql = "INSERT INTO words (idx_name, uri, word, cnt) VALUES "
+docs_sql = "UPSERT INTO docs (idx_name, uri, content, n_words) VALUES "
+words_sql = "UPSERT INTO words (idx_name, uri, word, cnt) VALUES "
 
 word_lists = [
   "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt",
@@ -188,7 +188,6 @@ def index_url(idx, url_base_64):
   for k in words:
     words_a.append(k)
     words_vals.append("('" + idx + "', '" + url + "', '" + k + "', " + str(words[k]) + ")")
-  # TODO: send any error messages back to client; e.g. primary key violation
   insert_row(docs_sql + "('" + idx + "', '" + url + "', '{" + ','.join(words_a) + "}', " + str(n_words) + ")", False)
   insert_row(words_sql + ','.join(words_vals))
   print("OK")

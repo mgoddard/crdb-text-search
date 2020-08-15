@@ -54,8 +54,9 @@ docs_sql = "UPSERT INTO docs (idx_name, uri, content, n_words) VALUES "
 words_sql = "UPSERT INTO words (idx_name, uri, word, cnt) VALUES "
 
 word_lists = [
-  "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt",
-  "https://raw.githubusercontent.com/mgoddard/crdb-text-search/master/specialized_words.txt"
+  "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt"
+  , "https://raw.githubusercontent.com/mgoddard/crdb-text-search/master/specialized_words.txt"
+  , "https://raw.githubusercontent.com/mgoddard/crdb-text-search/master/car_related_words.txt"
 ]
 vocab = set()
 sno = nltk.stem.SnowballStemmer("english")

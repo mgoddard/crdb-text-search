@@ -50,7 +50,7 @@ wget -O - https://github.com/mgoddard/crdb-text-search/raw/master/crdb-v20.2-doc
 
 ## The Demo
 
-* Using your SQL client, build the tables and indexes using the [provided SQL](./crdb_text_search.sql)
+* Using your SQL client, build the tables and indexes using the [provided DDL](./crdb_text_search.sql)
 
 * The `tar xzvf -` up above should have created the `crdb-v20.2-docs`.  Change into that directory:
 ```

@@ -16,13 +16,16 @@ import time
 CHARSET = "utf-8"
 
 if len(sys.argv) < 2:
-  print("Usage: %s [-n max_results] word [word2 ... wordN]" % sys.argv[0])
+  print("Usage: %s [-i index_name] [-n max_results] word [word2 ... wordN]" % sys.argv[0])
   sys.exit(1)
 
 term_list = []
 for i in range(1, len(sys.argv)):
   if "-n" == sys.argv[i]:
     max_results = int(sys.argv[i + 1])
+    i += 1
+  elif "-i" == sys.argv[i]:
+    index_name = sys.argv[i + 1]
     i += 1
   else:
     term_list.append(sys.argv[i])

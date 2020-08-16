@@ -135,10 +135,16 @@ LIMIT 12;
 
 ## Try the Docker image
 
-* Show how to run the Docker image
-* Run the DDL
-* Index some docs
-* Loop over searches, while adding more docs
+The Docker image will run against your locally deployed CockroachDB instance.
+
+1. Ensure you've run the SQL commands in `./crdb_text_search.sql` to build the tables and indexes.
+1. Pull the Docker image: `$ ./docker_pull_image.sh`
+1. Edit `./docker_run_image.sh`, changing `PGHOST`, `PGPORT`, and any other values to suit your setup.
+1. Run the image: `$ ./docker_run_image.sh`
+1. Edit `./add_doc_to_index.sh` if necessary (`host`, `port`, `index_name` may need to be changed)
+1. Use that script to index URLs, one at a time; e.g. `$ ./add_doc_to_index.sh https://www.cockroachlabs.com/docs/stable/architecture/overview.html`
+1. Edit `./search_client.py` (again, `host` and `port` may need to be changed)
+1. Run a search: `$ ./search_client.py -i crdb_docs architecture`
 
 ## Ideas for what to do next
 

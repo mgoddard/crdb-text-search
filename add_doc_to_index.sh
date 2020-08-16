@@ -3,6 +3,7 @@
 # TODO: Set the host and port of where the app is running
 host=localhost
 port=18080
+index_name=crdb_docs
 
 if [ $# -ne 1 ]
 then
@@ -11,5 +12,5 @@ then
 fi
 
 url=$1
-curl http://$host:$port/add/crdb_docs/$( echo -n "$url" | base64 )
+curl http://$host:$port/add/$index_name/$( echo -n "$url" | base64 )
 

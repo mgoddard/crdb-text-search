@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=1.2
+. ./current_tag.sh
 
 docker push mgoddard/crdb-search-app:$tag
 
